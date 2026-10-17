@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Workout Log">
+<meta name="theme-color" content="#efebe0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1f2228" media="(prefers-color-scheme: dark)">
+<title>Workout Log</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <div class="title">Workout Log</div>
+  <div class="seg">
+    <button id="pen" class="on" title="Pen">✎ Pen</button>
+    <button id="eraser" title="Eraser">⌫ Erase</button>
+  </div>
+  <button id="undo" title="Undo">↶ Undo</button>
+  <span class="spacer"></span>
+  <button id="today" title="Add today's column">+ Today</button>
+  <button id="edit" title="Edit rows and dates">Edit</button>
+  <div class="menu-wrap">
+    <button id="menu" title="More">⋯</button>
+    <div id="menu-pop" class="pop" hidden>
+      <button id="export">Export backup</button>
+      <button id="import">Import backup</button>
+    </div>
+  </div>
+  <input id="file" type="file" accept="application/json,.json" hidden>
+</header>
+<main id="grid"></main>
+<script src="app.js"></script>
+</body>
+</html>

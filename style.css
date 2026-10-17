@@ -1,0 +1,177 @@
+:root {
+  --bg: #f6f3ea;
+  --paper: #fbf9f3;
+  --side: #f3efe4;
+  --bar: #efebe0;
+  --line: #ddd7c8;
+  --line-strong: #bdb5a1;
+  --ink: #1c2230;
+  --muted: #857d6a;
+  --accent: #c2562d;
+  --today: #fff6dc;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171b;
+    --paper: #1b1e23;
+    --side: #202329;
+    --bar: #1f2228;
+    --line: #2c3038;
+    --line-strong: #434955;
+    --ink: #ece8dd;
+    --muted: #8f8b80;
+    --accent: #e08a5a;
+    --today: #25231b;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body { display: flex; flex-direction: column; height: 100dvh; }
+
+/* toolbar */
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  padding-top: max(8px, env(safe-area-inset-top));
+  padding-left: max(12px, env(safe-area-inset-left));
+  padding-right: max(12px, env(safe-area-inset-right));
+  background: var(--bar);
+  border-bottom: 1px solid var(--line-strong);
+  position: relative;
+  z-index: 10;
+}
+.title { font-weight: 600; margin-right: 8px; white-space: nowrap; }
+.spacer { flex: 1; }
+.seg { display: flex; }
+.seg button { border-radius: 0; }
+.seg button:first-child { border-radius: 10px 0 0 10px; }
+.seg button:last-child { border-radius: 0 10px 10px 0; border-left: none; }
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 8px 14px;
+  min-height: 40px;
+  white-space: nowrap;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+button:disabled { opacity: .4; }
+.menu-wrap { position: relative; }
+.pop {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: var(--bar);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
+}
+.pop[hidden] { display: none; }
+
+/* grid */
+#grid {
+  flex: 1;
+  overflow: auto;
+  display: grid;
+  align-content: start;
+  justify-content: start;
+  overscroll-behavior: contain;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.corner, .head {
+  position: sticky;
+  top: 0;
+  background: var(--bar);
+  border-bottom: 1px solid var(--line-strong);
+}
+.corner { left: 0; z-index: 4; border-right: 2px solid var(--line-strong); }
+.head {
+  z-index: 2;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.15;
+}
+.head .dow { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.head .date { font-weight: 600; font-variant-numeric: tabular-nums; }
+.head.today { background: var(--today); }
+.head.today .dow { color: var(--accent); }
+.side {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: var(--side);
+  border-right: 2px solid var(--line-strong);
+  border-bottom: 1px solid var(--line);
+}
+.cell {
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.cell.today { background: var(--today); }
+.add-row {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  padding: 8px;
+  background: var(--bg);
+}
+.add-row button { width: 100%; }
+
+svg.ink { display: block; width: 100%; height: 100%; color: var(--ink); }
+svg.ink path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+body.erasing svg.ink { cursor: cell; }
+
+/* edit mode controls */
+.ctl {
+  position: absolute;
+  display: flex;
+  gap: 4px;
+  z-index: 5;
+}
+.side .ctl { right: 4px; bottom: 4px; }
+.ctl button { min-height: 32px; padding: 4px 9px; border-radius: 8px; }
+.ctl button.del { color: var(--accent); }
+.head input[type="date"] {
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 2px 4px;
+  width: 116px;
+}
+.head .ctl { position: static; margin-top: 3px; }
