@@ -262,6 +262,30 @@ function hasStylus(e) {
 grid.addEventListener('touchstart', (e) => { if (hasStylus(e)) e.preventDefault(); }, { passive: false });
 grid.addEventListener('touchmove', (e) => { if (hasStylus(e)) e.preventDefault(); }, { passive: false });
 
+// Two-finger tap toggles pen/eraser (web pages can't see the Pencil's own double-tap).
+let twoTap = null;
+grid.addEventListener('touchstart', (e) => {
+  if (hasStylus(e)) return;
+  if (e.touches.length === 2) {
+    twoTap = { t: Date.now(), pts: [...e.touches].map((t) => [t.identifier, t.clientX, t.clientY]) };
+  } else if (e.touches.length > 2) {
+    twoTap = null;
+  }
+}, { passive: true });
+grid.addEventListener('touchmove', (e) => {
+  if (!twoTap) return;
+  for (const t of e.touches) {
+    const p = twoTap.pts.find((q) => q[0] === t.identifier);
+    if (p && Math.hypot(t.clientX - p[1], t.clientY - p[2]) > 12) { twoTap = null; return; }
+  }
+}, { passive: true });
+grid.addEventListener('touchend', (e) => {
+  if (!twoTap || e.touches.length) return;
+  if (Date.now() - twoTap.t < 350) setTool(tool === 'pen' ? 'eraser' : 'pen');
+  twoTap = null;
+});
+grid.addEventListener('touchcancel', () => { twoTap = null; });
+
 let active = null;
 
 function localPoint(e) {
@@ -377,11 +401,8 @@ const pop = $('#menu-pop');
 $('#menu').addEventListener('click', (e) => { e.stopPropagation(); pop.hidden = !pop.hidden; });
 document.addEventListener('click', () => { pop.hidden = true; });
 
-$('#export').addEventListener('click', async () => {
-  flush();
-  const name = `workout-log-${todayISO()}.json`;
-  const blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
-  const file = new File([blob], name, { type: 'application/json' });
+async function shareFile(blob, name) {
+  const file = new File([blob], name, { type: blob.type });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try { await navigator.share({ files: [file], title: name }); return; }
     catch (err) { if (err.name === 'AbortError') return; }
@@ -391,6 +412,77 @@ $('#export').addEventListener('click', async () => {
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+$('#export').addEventListener('click', () => {
+  flush();
+  shareFile(new Blob([JSON.stringify(state)], { type: 'application/json' }), `workout-log-${todayISO()}.json`);
+});
+
+// The whole log as one PNG, always in the light "paper" colours.
+// iOS Safari caps a canvas at ~16.7M pixels, so the scale drops for very long logs.
+function renderImage() {
+  const { rows, cols } = state;
+  const W = SIDE_W + cols.length * CELL_W, H = HEAD_H + rows.length * CELL_H;
+  const scale = Math.min(2, Math.sqrt(16e6 / (W * H)), 16000 / W, 16000 / H);
+  const cv = document.createElement('canvas');
+  cv.width = Math.floor(W * scale);
+  cv.height = Math.floor(H * scale);
+  const g = cv.getContext('2d');
+  g.scale(scale, scale);
+  g.fillStyle = '#fbf9f3'; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#f3efe4'; g.fillRect(0, 0, SIDE_W, H);
+  g.fillStyle = '#efebe0'; g.fillRect(0, 0, W, HEAD_H);
+
+  g.fillStyle = '#ddd7c8';
+  cols.forEach((_, i) => g.fillRect(SIDE_W + (i + 1) * CELL_W - 1, 0, 1, H));
+  rows.forEach((_, i) => g.fillRect(0, HEAD_H + (i + 1) * CELL_H - 1, W, 1));
+  g.fillStyle = '#bdb5a1';
+  g.fillRect(SIDE_W - 2, 0, 2, H);
+  g.fillRect(0, HEAD_H - 1, W, 1);
+
+  g.textAlign = 'center';
+  let prevYear = null;
+  cols.forEach((col, i) => {
+    const d = new Date(col.date + 'T12:00:00');
+    const x = SIDE_W + i * CELL_W + CELL_W / 2;
+    const yr = d.getFullYear();
+    g.fillStyle = '#857d6a';
+    g.font = '12px -apple-system, system-ui, sans-serif';
+    g.fillText(DOW[d.getDay()].toUpperCase() + (yr !== prevYear ? ` ${yr}` : ''), x, 22);
+    prevYear = yr;
+    g.fillStyle = '#1c2230';
+    g.font = '600 15px -apple-system, system-ui, sans-serif';
+    g.fillText(`${MON[d.getMonth()]} ${d.getDate()}`, x, 41);
+  });
+
+  g.strokeStyle = '#1c2230';
+  g.lineWidth = 2.2;
+  g.lineCap = g.lineJoin = 'round';
+  const ink = (key, x, y) => {
+    const strokes = state.ink[key];
+    if (!strokes) return;
+    g.save();
+    g.beginPath();
+    g.rect(x, y, key.startsWith('r:') ? SIDE_W - 2 : CELL_W - 1, CELL_H - 1);
+    g.clip();
+    g.translate(x, y);
+    for (const p of strokes) g.stroke(new Path2D(pathD(p)));
+    g.restore();
+  };
+  rows.forEach((row, r) => {
+    const y = HEAD_H + r * CELL_H;
+    ink('r:' + row.id, 0, y);
+    cols.forEach((col, c) => ink(`c:${col.id}:${row.id}`, SIDE_W + c * CELL_W, y));
+  });
+  return cv;
+}
+
+$('#export-img').addEventListener('click', () => {
+  renderImage().toBlob((blob) => {
+    if (blob) shareFile(blob, `workout-log-${todayISO()}.png`);
+    else alert('Could not create the image.');
+  }, 'image/png');
 });
 $('#import').addEventListener('click', () => $('#file').click());
 $('#file').addEventListener('change', async (e) => {

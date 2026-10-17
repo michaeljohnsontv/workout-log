@@ -1,10 +1,10 @@
 // Offline cache: serve from cache instantly (works with no signal at the gym),
 // refresh the cache in the background so updates show up on the next launch.
-const CACHE = 'workout-log-v1';
+const CACHE = 'workout-log-v2';
 const FILES = ['./', 'index.html', 'app.js', 'style.css', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: 'reload' })))));
   self.skipWaiting();
 });
 
