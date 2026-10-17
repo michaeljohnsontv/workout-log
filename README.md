@@ -1,3 +1,4 @@
+(note: app created primarily by Claude Code. README created by Claude Code.)
 # Workout Log
 
 An ink-first workout grid for iPad + Apple Pencil. A frozen left column holds the exercises (handwritten); one column per day scrolls sideways. Pencil writes, fingers scroll. No keyboard anywhere.
