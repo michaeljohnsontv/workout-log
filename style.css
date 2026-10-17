@@ -120,6 +120,22 @@ button:disabled { opacity: .4; }
 .head .dow { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
 .head .date { font-weight: 600; font-variant-numeric: tabular-nums; }
 .head.today { background: var(--today); }
+/* days since the previous column, straddling the border between them */
+.head .gap {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  background: var(--bar);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  z-index: 1;
+}
 .head.today .dow { color: var(--accent); }
 .side {
   position: sticky;

@@ -11,6 +11,8 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const pad = (n) => String(n).padStart(2, '0');
 const isoOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const todayISO = () => isoOf(new Date());
+// Whole days from one ISO date to the next (noon avoids daylight-saving off-by-ones).
+const daysBetween = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 864e5);
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -148,9 +150,11 @@ function render() {
 
   div('corner', frag);
   let prevYear = null;
-  for (const col of cols) {
+  cols.forEach((col, ci) => {
     const h = div('head' + (col.date === today ? ' today' : ''), frag);
     h.dataset.col = col.id;
+    const gap = ci > 0 ? daysBetween(cols[ci - 1].date, col.date) : null;
+    if (gap !== null && !editMode) div('gap', h).textContent = gap + 'd';
     const d = new Date(col.date + 'T12:00:00');
     const yr = d.getFullYear();
     const showYear = yr !== new Date().getFullYear() && yr !== prevYear;
@@ -175,7 +179,7 @@ function render() {
       div('dow', h).textContent = DOW[d.getDay()];
       div('date', h).textContent = `${MON[d.getMonth()]} ${d.getDate()}` + (showYear ? ` ’${String(yr).slice(2)}` : '');
     }
-  }
+  });
 
   rows.forEach((row, i) => {
     const s = div('side', frag);
@@ -455,6 +459,24 @@ function renderImage() {
     g.font = '600 15px -apple-system, system-ui, sans-serif';
     g.fillText(`${MON[d.getMonth()]} ${d.getDate()}`, x, 41);
   });
+  // day gaps on the column borders
+  g.font = '600 11px -apple-system, system-ui, sans-serif';
+  g.textBaseline = 'middle';
+  cols.forEach((col, i) => {
+    if (!i) return;
+    const label = daysBetween(cols[i - 1].date, col.date) + 'd';
+    const x = SIDE_W + i * CELL_W, w = g.measureText(label).width + 12, y = HEAD_H / 2;
+    g.fillStyle = '#efebe0';
+    g.strokeStyle = '#bdb5a1';
+    g.lineWidth = 1;
+    g.beginPath();
+    g.roundRect(x - w / 2, y - 9, w, 18, 9);
+    g.fill();
+    g.stroke();
+    g.fillStyle = '#857d6a';
+    g.fillText(label, x, y + 0.5);
+  });
+  g.textBaseline = 'alphabetic';
 
   g.strokeStyle = '#1c2230';
   g.lineWidth = 2.2;
