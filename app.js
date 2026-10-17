@@ -418,10 +418,11 @@ async function shareFile(blob, name) {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
-$('#export').addEventListener('click', () => {
+function exportBackup() {
   flush();
   shareFile(new Blob([JSON.stringify(state)], { type: 'application/json' }), `workout-log-${todayISO()}.json`);
-});
+}
+$('#export').addEventListener('click', exportBackup);
 
 // The whole log as one PNG, always in the light "paper" colours.
 // iOS Safari caps a canvas at ~16.7M pixels, so the scale drops for very long logs.
@@ -500,11 +501,25 @@ function renderImage() {
   return cv;
 }
 
-$('#export-img').addEventListener('click', () => {
+function exportImage() {
   renderImage().toBlob((blob) => {
     if (blob) shareFile(blob, `workout-log-${todayISO()}.png`);
     else alert('Could not create the image.');
   }, 'image/png');
+}
+$('#export-img').addEventListener('click', exportImage);
+
+const clearDlg = $('#clear-dlg');
+$('#clear').addEventListener('click', () => clearDlg.showModal());
+$('#clear-backup').addEventListener('click', exportBackup);
+$('#clear-image').addEventListener('click', exportImage);
+$('#clear-cancel').addEventListener('click', () => clearDlg.close());
+$('#clear-go').addEventListener('click', () => {
+  clearDlg.close();
+  pushStructUndo(); // Undo can still bring it back until the app is closed
+  state = freshState();
+  render();
+  flush();
 });
 $('#import').addEventListener('click', () => $('#file').click());
 $('#file').addEventListener('change', async (e) => {

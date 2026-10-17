@@ -32,11 +32,24 @@
       <button id="export-img">Save image of log</button>
       <button id="export">Export backup</button>
       <button id="import">Import backup</button>
+      <button id="clear" class="danger">Clear all…</button>
     </div>
   </div>
   <input id="file" type="file" accept="application/json,.json" hidden>
 </header>
 <main id="grid"></main>
+<dialog id="clear-dlg">
+  <h2>Clear the whole log?</h2>
+  <p>This erases every day, every row and everything you've written, and starts a fresh empty log. Save a copy first if you might want it back.</p>
+  <div class="dlg-row">
+    <button id="clear-backup">Save backup</button>
+    <button id="clear-image">Save image</button>
+  </div>
+  <div class="dlg-row end">
+    <button id="clear-cancel">Cancel</button>
+    <button id="clear-go" class="danger solid">Clear everything</button>
+  </div>
+</dialog>
 <script src="app.js"></script>
 </body>
 </html>

@@ -90,6 +90,23 @@ button:disabled { opacity: .4; }
   box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
 }
 .pop[hidden] { display: none; }
+button.danger { color: var(--accent); }
+button.danger.solid { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+dialog {
+  max-width: 440px;
+  padding: 20px 22px;
+  color: var(--ink);
+  background: var(--bar);
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .3);
+}
+dialog::backdrop { background: rgba(0, 0, 0, .35); }
+dialog h2 { margin: 0 0 8px; font-size: 19px; }
+dialog p { margin: 0 0 16px; line-height: 1.4; color: var(--muted); }
+.dlg-row { display: flex; gap: 8px; margin-top: 10px; }
+.dlg-row.end { justify-content: flex-end; margin-top: 18px; }
 
 /* grid */
 #grid {
